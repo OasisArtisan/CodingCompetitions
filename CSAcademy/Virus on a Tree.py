@@ -17,13 +17,6 @@ class Node:
             self.index, self.parent, self.children, self.connections, self.family_size, self.height, self.height_below)
 
 
-class Edge:
-    def __init(self, n1, n2, can_cut):
-        self.n1 = n1
-        self.n2 = n2
-        self.can_cut = can_cut
-
-
 N, K = [int(x) for x in input().split()]
 can_cut = dict()
 nodes = [Node(i) for i in range(N)]
@@ -92,7 +85,7 @@ for n in sorted_nodes:
     elif not n.visited and can_cut[frozenset({n.index, n.parent})]:
         target_cut_nodes -= n.family_size
         cuts += 1
-        
+
         def mark(node):
             node.visited = True
         dfs(n, mark)
