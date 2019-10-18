@@ -8,6 +8,7 @@ class Node:
         self.height = None
         self.height_below = None
         self.family_size = None  # Including the node itself
+        self.visited = False
         self.children = set()
         self.connections = set()
 
@@ -25,11 +26,11 @@ class Edge:
 
 N, K = [int(x) for x in input().split()]
 can_cut = dict()
-nodes = [Node(i) for i in range(N+1)]
+nodes = [Node(i) for i in range(N)]
 for e in range(N-1):
     inp = input().split()
-    n1 = int(inp[0])
-    n2 = int(inp[1])
+    n1 = int(inp[0]) - 1
+    n2 = int(inp[1]) - 1
     c = inp[2] == "1"
     nodes[n1].connections.add(n2)
     nodes[n2].connections.add(n1)
@@ -54,13 +55,13 @@ def info_traverse(height, parent_index, root_node):
     return root_node.family_size, root_node.height_below + 1
 
 
-def bfs(fun):
+def bfs(root, func):
     i = 0
-    current_level = [1]
+    current_level = [root.index]
     next_level = []
     while i < len(current_level):
         node = nodes[current_level[i]]
-        fun(node.index)
+        func(node)
         next_level.extend(node.children)
         i += 1
         if i == len(current_level):
@@ -69,9 +70,33 @@ def bfs(fun):
             i = 0
 
 
-info_traverse(1, None, nodes[1])
-bfs(print)
+def dfs(root, func, order="pre"):
+    if order == "pre":
+        func(root)
+    for child in root.children:
+        dfs(nodes[child], func)
+    if order == "post":
+        func(root)
 
 
-def solve(node):
-    pass
+info_traverse(1, None, nodes[0])
+sorted_nodes = nodes.copy()
+sorted_nodes.sort(key=lambda x: x.family_size, reverse=True)
+target_cut_nodes = N - K
+cuts = 0
+for n in sorted_nodes:
+    if n.parent is None:  # Skip root
+        continue
+    if target_cut_nodes <= 0:
+        break
+    elif not n.visited and can_cut[frozenset({n.index, n.parent})]:
+        target_cut_nodes -= n.family_size
+        cuts += 1
+        
+        def mark(node):
+            node.visited = True
+        dfs(n, mark)
+if target_cut_nodes <= 0:
+    print(cuts)
+else:
+    print(-1)
